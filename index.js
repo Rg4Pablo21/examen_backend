@@ -1,37 +1,41 @@
-require('dotenv').config();
 const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors');
-
-// Importar la base de datos
-const db = require('./src/db');  // Asegúrate de que tienes una conexión correcta a tu base de datos
+const sequelize = require('./src/db'); // 📌 Usa la conexión de `db.js`
 
 // Importar rutas
-const alumnoRoutes = require('./routes/alumnoRoutes');
-const claseRoutes = require('./routes/claseRoutes');
-const asistenciaRoutes = require('./routes/asistenciaRoutes');
-const profesorRoutes = require('./routes/profesorRoutes');
+const asistenciaRoutes = require('./routes/asistenciaRoutes.js');
+const alumnoRoutes = require('./routes/alumnoRoutes.js');
+const claseRoutes = require('./routes/claseRoutes.js');
+const profesorRoutes = require('./routes/profesorRoutes.js');
 
 const app = express();
 
-// Configurar CORS
-const corsOptions = {
-    origin: 'http://127.0.0.1:5501', // Permitir solo esta URL
-    methods: ['GET', 'POST'],
-};
+// Habilitar CORS y JSON
+app.use(cors());
+app.use(bodyParser.json());
 
-app.use(cors(corsOptions));  // Aplicar las opciones de CORS a todas las rutas
+// Rutas API
+app.use('/api/asistencia', asistenciaRoutes);
+app.use('/api/alumno', alumnoRoutes);
+app.use('/api/clase', claseRoutes);
+app.use('/api/profesor', profesorRoutes);
 
-// Middlewares
-app.use(express.json());
+// Verificar conexión a la base de datos
+sequelize.authenticate()
+    .then(() => {
+        console.log('✅ Conexión a la base de datos exitosa');
+        return sequelize.sync({ force: true }); // Puedes usar 'force: true' para borrar y crear las tablas nuevamente (ten cuidado con esto en producción)
+    })
+    .then(() => {
+        console.log('✅ Base de datos sincronizada');
+    })
+    .catch((error) => {
+        console.error('❌ Error al conectar con la base de datos:', error);
+    });
 
-// Rutas
-app.use('/api/alumnos', alumnoRoutes);
-app.use('/api/clases', claseRoutes);
-app.use('/api/asistencias', asistenciaRoutes);  // Ruta correcta
-app.use('/api/profesores', profesorRoutes);
 
-// Iniciar servidor
-const PORT = process.env.PORT || 5000;
+const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
+    console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });

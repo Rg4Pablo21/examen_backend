@@ -1,33 +1,25 @@
-const Asistencia = require('../models/asistencia.js'); // Importa el modelo de Asistencia
+const Asistencia = require('../models/asistencia.js');
 
-// Obtener la lista de estudiantes que han asistido
-const obtenerLista = async (req, res) => {
+async function registrarAsistencia(req, res) {
     try {
-        const asistencias = await Asistencia.findAll(); // Trae todas las asistencias
-        res.json(asistencias); // Devuelve la lista de estudiantes
+        const { alumno_nombre, fecha, estado } = req.body;
+
+        if (!alumno_nombre || !fecha || !estado) {
+            return res.status(400).json({ error: 'Faltan datos requeridos' });
+        }
+
+        // 📌 Registra la asistencia sin importar si el alumno existe o no
+        const asistencia = await Asistencia.create({
+            alumno_nombre,
+            fecha,
+            estado
+        });
+
+        return res.status(201).json({ mensaje: 'Asistencia registrada con éxito', asistencia });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error al obtener la lista de asistencia' });
+        console.error('Error al registrar asistencia:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
     }
-};
+}
 
-// Registrar asistencia de un estudiante
-const registrarAsistencia = async (req, res) => {
-    const { nombre } = req.body;
-    
-    try {
-        // Registrar la asistencia en la base de datos
-        const asistencia = await Asistencia.create({ nombre });
-
-        // Devuelve la respuesta si se registró correctamente
-        res.status(201).json(asistencia);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error al registrar la asistencia' });
-    }
-};
-
-module.exports = {
-    obtenerLista,
-    registrarAsistencia
-};
+module.exports = { registrarAsistencia };

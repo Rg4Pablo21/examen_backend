@@ -1,19 +1,26 @@
-const db = require('../src/db');
+const Sequelize = require('sequelize');
+const sequelize = require('../src/db.js'); 
 
-class Alumno {
-    static async getAll() {
-        const [rows] = await db.query('SELECT * FROM alumnos');
-        return rows;
-    }
-
-    static async create(nombre, correo) {
-        const [result] = await db.query('INSERT INTO alumnos (nombre, correo) VALUES (?, ?)', [nombre, correo]);
-        return result.insertId;
-    }
-
-    static async delete(id) {
-        await db.query('DELETE FROM alumnos WHERE id = ?', [id]);
-    }
-}
+const Alumno = sequelize.define('Alumno', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  nombre: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  createdAt: {
+    type: Sequelize.DATE,
+    defaultValue: Sequelize.NOW
+  },
+  updatedAt: {
+    type: Sequelize.DATE,
+    defaultValue: Sequelize.NOW
+  }
+}, {
+  freezeTableName: true  // Evita que Sequelize pluralice el nombre de la tabla
+});
 
 module.exports = Alumno;
